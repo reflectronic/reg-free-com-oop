@@ -1,0 +1,11 @@
+import "unknwn.idl";
+
+[
+	object,
+	uuid(a03d1420-b1ec-11d0-8c3a-00c04fc31d2f),
+] 
+interface ICalculator : IUnknown
+{
+	HRESULT Add([in] int left, [in] int right, [out, retval] int* sum);
+};	
+
