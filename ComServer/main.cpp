@@ -54,23 +54,7 @@ std::wstring GetExePath()
 
 int main(int argc, char* argv[])
 {
-    if (argc != 1)
-    {
-        std::cout << "Incorrect usage";
-        return -1;
-    }
-
     winrt::init_apartment();
-
-    std::wstring clsidStr(argv[0], argv[0] + strlen(argv[0]));
-
-    CLSID clsid;
-    winrt::check_hresult(::UuidFromStringW(clsidStr.data(), &clsid));
-
-    RPC_WSTR clsidGenStr;
-    winrt::check_win32(::UuidToStringW(&clsid, &clsidGenStr));
-
-    std::wcout << L"Using CLSID: " << clsidGenStr << std::endl;
 
     std::wstring manifestPath = std::filesystem::path(GetExePath()).parent_path().parent_path().append(L"ActivationManifest.manifest");
     ACTCTXW actctx = {
@@ -81,18 +65,21 @@ int main(int argc, char* argv[])
     HANDLE actctxHandle = ::CreateActCtxW(&actctx);
     winrt::check_bool(actctxHandle != INVALID_HANDLE_VALUE);
 
-    ULONG_PTR activationCookie;
+    ULONG_PTR activationCookie{ 0 };
     winrt::check_bool(::ActivateActCtx(actctxHandle, &activationCookie));
 
     DWORD regCookie;
     winrt::check_hresult(::CoRegisterClassObject(
-        clsid,
+        CLSID_Calculator,
         winrt::make<CalculatorFactory>().get(),
         CLSCTX_LOCAL_SERVER,
         REGCLS_MULTIPLEUSE,
         &regCookie));
 
-    std::wcout << L"Registered factory for CLSID: " << clsidGenStr << std::endl;
+    winrt::check_bool(::DeactivateActCtx(0, activationCookie));
+    ::ReleaseActCtx(actctxHandle);
+
+    std::wcout << L"Successfully registered factory" << std::endl;
 
     MSG msg{ 0 };
     while (::GetMessageW(&msg, nullptr, 0, 0) > 0)

@@ -7,5 +7,6 @@ import "unknwn.idl";
 interface ICalculator : IUnknown
 {
 	HRESULT Add([in] int left, [in] int right, [out, retval] int* sum);
-};	
+};
 
+declare_guid(CLSID_Calculator, FB69894A-DF29-4D22-AF13-81F20270A2CE);
